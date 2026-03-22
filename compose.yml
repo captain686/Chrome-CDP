@@ -2,9 +2,6 @@ services:
   chrome-secure:
     image: ghcr.io/captain686/chrome-cdp:latest
     container_name: chrome
-    ports:
-      - "5900:5900"
-      - "9222:9222"
     shm_size: '2gb'
     security_opt:
       - seccomp=unconfined
@@ -14,3 +11,33 @@ services:
       - $PWD/chrome_data:/data/chrome-profile
     user: "1000:1000"
     restart: unless-stopped
+    environment:
+      - DISPLAY=:1
+    ports:
+      - "5900:5900"  # VNC
+      - "9222:9222"  # Chrome DevTools Protocol
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9222/json/version"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 3G
+        reservations:
+          cpus: '1'
+          memory: 2G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - chrome-network
+
+networks:
+  chrome-network:
+    driver: bridge

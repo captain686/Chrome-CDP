@@ -36,7 +36,9 @@ RUN groupadd -g 1000 chromeuser && \
 
 # 权限修正：确保 /data 和 /tmp 权限
 RUN mkdir -p /data/chrome-profile && chown -R chromeuser:chromeuser /data && \
-    chmod 1777 /tmp
+    chmod 755 /data && \
+    chmod 1777 /tmp && \
+    mkdir -p /tmp/supervisor && chown chromeuser:chromeuser /tmp/supervisor
 
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
@@ -46,4 +48,4 @@ WORKDIR /home/chromeuser
 EXPOSE 9222 5900
 
 # 启动前强制修复 dbus 和清理锁
-CMD ["/usr/bin/bash", "-c", "rm -f /tmp/.X1-lock /tmp/supervisor.sock && dbus-uuidgen > /etc/machine-id && /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf"]
+CMD ["/usr/bin/bash", "-c", "rm -f /tmp/.X1-lock /tmp/supervisor/supervisor.sock && dbus-uuidgen > /etc/machine-id && /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf"]
